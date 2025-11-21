@@ -1,5 +1,5 @@
 package cookingMonitor;
 
 public interface TemperatureListener {
-	public void onTemperatureUpdate(String reading);
+	public void onTemperatureUpdate(TemperatureReading reading);
 }

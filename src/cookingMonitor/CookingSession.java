@@ -39,8 +39,8 @@ public class CookingSession implements TemperatureListener {
 		return this.timeRemaining;
 	}
 	
-	public void onTemperatureUpdate(String reading) {
-		double temp = Double.parseDouble(reading); 
+	public void onTemperatureUpdate(TemperatureReading reading) {
+		double temp = reading.getTemperature();
 		this.rate = this.estimator.calculateRate(temp, this.currentTemp);
 		this.currentTemp = temp;
 		

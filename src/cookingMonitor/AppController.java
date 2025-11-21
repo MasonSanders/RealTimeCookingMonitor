@@ -1,6 +1,10 @@
 package cookingMonitor;
 
 public class AppController {
+	private GrillController grillController;
+	private TemperatureListener grillListener;
+	private SessionController sessionController;
+	
 	public AppController() {
 		// Constructor
 	}
