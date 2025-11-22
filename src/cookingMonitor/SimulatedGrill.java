@@ -71,7 +71,6 @@ public class SimulatedGrill implements GrillDevice, Runnable {
 		connected = true;
 		currentTemp = ambientTemp;
 		running = true;
-		setPower(true);
 		heating = true;
 		simulationThread.start();
 	}
@@ -86,12 +85,18 @@ public class SimulatedGrill implements GrillDevice, Runnable {
 			Thread.currentThread().interrupt();
 		}
 		connected = false;
-		setPower(false);
 	}
 	
 	@Override
-	public void setPower(boolean on) {}
+	public void setPower(boolean on) {
+		if (on) {
+			connect();
+		} else {
+			disconnect();
+		}
+	}
 	
-	
-	
+	public boolean getConnected() {
+		return connected;
+	}
 }
