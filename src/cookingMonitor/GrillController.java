@@ -16,14 +16,38 @@ public class GrillController {
 	
 	public void setDesiredTemp(double desiredTemp) {
 		this.desiredTemp = desiredTemp;
+		grill.setTargetTemperature(this.desiredTemp);
 	}
 	
 	public double getDesiredTemp() {
 		return this.desiredTemp;
 	}
 	
+	public void preheat() {
+		grill.connect();
+	}
+	
+	public void shutdown() {
+		grill.disconnect();
+	}
 	
 	public void handleGrillTemperature(TemperatureReading reading) {
-		
+		if (reading.getTemperature() > desiredTemp - 5.0 && reading.getTemperature() < desiredTemp + 5.0) {
+			if (!preheated)
+			{
+				// need to prompt the user to put food on the grill and insert thermometers.
+				//...
+				sessionController.startAllSessions(); // start all sessions. sessions will not be started again if they are
+				preheated = true;
+			}
+		} else if (reading.getTemperature() <= desiredTemp - 5.0) {
+			if (preheated) {
+				grill.setHeating(true);
+			}
+		} else if (reading.getTemperature() >= desiredTemp + 5.0) {
+			if (preheated) {
+				grill.setHeating(false);
+			}
+		}
 	}
 }

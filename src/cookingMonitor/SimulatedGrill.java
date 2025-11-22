@@ -1,6 +1,7 @@
 package cookingMonitor;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class SimulatedGrill implements GrillDevice, Runnable {
 	private final String deviceId;
@@ -9,9 +10,9 @@ public class SimulatedGrill implements GrillDevice, Runnable {
 	private double currentTemp;
 	private double ambientTemp;
 	private double targetTemp;
-	private boolean heating;
-	private double heatRate;
-	private double coolRate;
+	private boolean heating = false;
+	private double heatRate = 3.0;
+	private double coolRate = 3.0;
 	private Thread simulationThread;
 	private volatile boolean running = false;
 	private boolean connected;
@@ -38,9 +39,22 @@ public class SimulatedGrill implements GrillDevice, Runnable {
 		}
 	}
 	
+	private double calculateNewTemp () {
+		double min = -2.0;
+		double max = 2.0;
+		
+		double randomValue = ThreadLocalRandom.current().nextDouble(min, max);
+		
+		return currentTemp + randomValue;
+	}
+	
 	private void simulationLoop() throws InterruptedException {
 		running = true;
 		while (running) {
+			// add variation to the grill to simulate feedback control.
+			
+			currentTemp = calculateNewTemp();
+			
 			if (heating && currentTemp < targetTemp) {
 				currentTemp += heatRate;
 			} else if (!heating && currentTemp > ambientTemp) {
@@ -64,6 +78,7 @@ public class SimulatedGrill implements GrillDevice, Runnable {
 	public void setTargetTemperature(double target) {
 		targetTemp = target;
 	}
+	
 	
 	@Override
 	public void connect() {
@@ -94,6 +109,11 @@ public class SimulatedGrill implements GrillDevice, Runnable {
 		} else {
 			disconnect();
 		}
+	}
+	
+	@Override
+	public void setHeating(boolean on) {
+		heating = on;	
 	}
 	
 	public boolean getConnected() {
