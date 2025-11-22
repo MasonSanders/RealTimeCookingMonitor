@@ -55,7 +55,4 @@ public class CookingSession implements TemperatureListener {
 				this.rate
 		);
 	}
-	
-	
-	
 }

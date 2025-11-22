@@ -11,8 +11,11 @@ public class SimulatedGrill implements GrillDevice, Runnable {
 	private double targetTemp;
 	private boolean heating;
 	private double heatRate;
-	private double rampRate;
 	private double coolRate;
+	private Thread simulationThread;
+	private volatile boolean running = false;
+	private boolean connected;
+	
 	
 	public SimulatedGrill(String deviceId) {
 		this.deviceId = deviceId;
@@ -35,9 +38,26 @@ public class SimulatedGrill implements GrillDevice, Runnable {
 		}
 	}
 	
+	private void simulationLoop() throws InterruptedException {
+		running = true;
+		while (running) {
+			if (heating && currentTemp < targetTemp) {
+				currentTemp += heatRate;
+			} else if (!heating && currentTemp > ambientTemp) {
+				currentTemp -= coolRate;
+			}
+			notifyListeners();
+			Thread.sleep(1000);
+		}
+	}
+	
 	@Override
 	public void run() {
-		
+		try {
+			simulationLoop();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
 	}
 	
 	@Override
@@ -46,10 +66,28 @@ public class SimulatedGrill implements GrillDevice, Runnable {
 	}
 	
 	@Override
-	public void connect() {}
+	public void connect() {
+		simulationThread = new Thread(this);
+		connected = true;
+		currentTemp = ambientTemp;
+		running = true;
+		setPower(true);
+		heating = true;
+		simulationThread.start();
+	}
 	
 	@Override
-	public void disconnect() {}
+	public void disconnect() {
+		running = false;
+		heating = false;
+		try {
+			simulationThread.join();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+		connected = false;
+		setPower(false);
+	}
 	
 	@Override
 	public void setPower(boolean on) {}
