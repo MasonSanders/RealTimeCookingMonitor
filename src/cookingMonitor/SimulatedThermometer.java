@@ -75,6 +75,11 @@ public class SimulatedThermometer implements ThermometerDevice, Runnable {
 		connected = false;	
 	}
 	
+	@Override
+	public String getDeviceID() {
+		return deviceId;
+	}
+	
 	public boolean getConnected() {
 		return connected;
 	}

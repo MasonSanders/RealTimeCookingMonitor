@@ -7,11 +7,12 @@ public class CookingSession implements TemperatureListener {
 	private FoodProfile foodProfile;
 	private double currentTemp;
 	private double rate;
+	public static int nextSID = 1;
 	private ProgressEstimator estimator;
 	private ThermometerDevice thermometer;
 	
-	public CookingSession(String sid, FoodProfile fp, ThermometerDevice thermometer) {
-		this.sessionID = sid;
+	public CookingSession(FoodProfile fp, ThermometerDevice thermometer) {
+		this.sessionID = "session-" + nextSID++;
 		this.progress = 0.0;
 		this.foodProfile = fp;
 		this.timeRemaining = "";
@@ -39,6 +40,10 @@ public class CookingSession implements TemperatureListener {
 	
 	public String getTimeRemaining() {
 		return this.timeRemaining;
+	}
+	
+	public ThermometerDevice getThermometer() {
+		return thermometer;
 	}
 	
 	public void onTemperatureUpdate(TemperatureReading reading) {

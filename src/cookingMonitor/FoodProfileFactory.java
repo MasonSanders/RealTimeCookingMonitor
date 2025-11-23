@@ -2,27 +2,43 @@ package cookingMonitor;
 
 public class FoodProfileFactory {
 	
-	public FoodProfile createWellSteakProfile() {
+	public static FoodProfile create(Dish dish) {
+		switch(dish) {
+		case CHICKEN:
+			return createChickenProfile();
+		case HAMBURGER:
+			return createHamburgerProfile();
+		case PORK:
+			return createPorkProfile();
+		default:
+			System.out.println("Food Profile Factory cannot discern steak profile");
+			System.exit(1);
+			break;
+		}
+		return createChickenProfile();
+	}
+	
+	public static FoodProfile createWellSteakProfile() {
 		return new WellSteakProfile();
 	}
 	
-	public FoodProfile createMediumSteakProfile() {
+	public static FoodProfile createMediumSteakProfile() {
 		return new MediumSteakProfile();
 	}
 	
-	public FoodProfile createRareSteakProfile() {
+	public static FoodProfile createRareSteakProfile() {
 		return new RareSteakProfile();
 	}
 	
-	public FoodProfile createHamburgerProfile() {
+	public static FoodProfile createHamburgerProfile() {
 		return new HamburgerProfile();
 	}
 	
-	public FoodProfile createChickenProfile() {
+	public static FoodProfile createChickenProfile() {
 		return new ChickenProfile();
 	}
 	
-	public FoodProfile createPorkProfile() {
+	public static FoodProfile createPorkProfile() {
 		return new PorkProfile();
 	}
 	

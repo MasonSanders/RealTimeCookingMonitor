@@ -27,8 +27,16 @@ public class GrillController {
 		grill.connect();
 	}
 	
+	public boolean isPreheating() {
+		return grill.getHeating();
+	}
+	
 	public void shutdown() {
 		grill.disconnect();
+	}
+	
+	public boolean isGrillConnected() {
+		return grill.getConnected();
 	}
 	
 	public void handleGrillTemperature(TemperatureReading reading) {

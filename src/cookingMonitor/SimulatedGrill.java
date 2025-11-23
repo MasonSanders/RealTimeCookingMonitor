@@ -66,6 +66,11 @@ public class SimulatedGrill implements GrillDevice, Runnable {
 	}
 	
 	@Override
+	public boolean getHeating() {
+		return heating;
+	}
+	
+	@Override
 	public void run() {
 		try {
 			simulationLoop();
@@ -116,6 +121,7 @@ public class SimulatedGrill implements GrillDevice, Runnable {
 		heating = on;	
 	}
 	
+	@Override
 	public boolean getConnected() {
 		return connected;
 	}

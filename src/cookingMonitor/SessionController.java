@@ -8,7 +8,8 @@ public class SessionController {
 	
 	
 	public void addSession(CookingSession session) {
-		sessions.put(session.getSessionID(), session);
+		String deviceID = session.getThermometer().getDeviceID();
+		sessions.put(deviceID, session);
 	}
 	
 	public void removeSession(String sessionID) {
@@ -19,12 +20,20 @@ public class SessionController {
 		sessions.clear();
 	}
 	
-	public void startSession(String sessionID) {
-		sessions.get(sessionID).startCooking();
+	public void startSession(String deviceID) {
+		sessions.get(deviceID).startCooking();
 	}
 	
-	public void stopSession(String sessionID) {
-		sessions.get(sessionID).stopCooking();
+	public void stopSession(String deviceID) {
+		sessions.get(deviceID).stopCooking();
+	}
+	
+	public CookingSession getSession(String deviceID) {
+		return sessions.get(deviceID);
+	}
+	
+	public boolean hasSession(String deviceID) {
+		return sessions.containsKey(deviceID);
 	}
 	
 	public void startAllSessions() {
