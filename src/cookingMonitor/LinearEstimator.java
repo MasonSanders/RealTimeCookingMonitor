@@ -8,21 +8,30 @@ public class LinearEstimator implements ProgressEstimator {
 	
 	// return the time remaining as a string that can be easily displayed on a GUI
 	public String estimateTimeRemaining(double currentTemp, double targetTemp, double rate) {
-		// this will give the time in seconds.
-		int seconds = (int) Math.ceil((targetTemp - currentTemp) / rate);
-		int minutes = seconds / 60;
-		seconds = seconds % 60;
-		
-		// construct string in the format minutes:seconds
-		String result = Integer.toString(minutes);
-		result = result + ":";
-		if (seconds < 10)
-			result = result + "0" + Integer.toString(seconds);
-		else
-			result = result + Integer.toString(seconds);
-		
-		return result;
+	    
+	    if (currentTemp >= targetTemp) {
+	        return "0:00";
+	    }
+
+	   
+	    if (rate <= 0.000001) {
+	        return "0:00";
+	    }
+
+	   
+	    double remaining = (targetTemp - currentTemp) / rate;
+
+	    if (remaining < 0) {
+	    	remaining = 0;
+	    }
+	    
+	    int totalSeconds = (int) Math.ceil(remaining);
+	    int minutes = totalSeconds / 60;
+	    int seconds = totalSeconds % 60;
+
+	    return String.format("%d:%02d", minutes, seconds);
 	}
+
 	
 	// meant to be calculated once per second 
 	public double calculateRate(double currentTemp, double prevTemp) {

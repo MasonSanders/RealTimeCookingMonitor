@@ -7,16 +7,21 @@ public class CookingSession implements TemperatureListener {
 	private FoodProfile foodProfile;
 	private double currentTemp;
 	private double rate;
+	public static int nextSID = 1;
 	private ProgressEstimator estimator;
+	private ThermometerDevice thermometer;
+	private boolean done = false;
 	
-	public CookingSession(String sid, FoodProfile fp) {
-		this.sessionID = sid;
+	public CookingSession(FoodProfile fp, ThermometerDevice thermometer) {
+		this.sessionID = "session-" + nextSID++;
 		this.progress = 0.0;
 		this.foodProfile = fp;
 		this.timeRemaining = "";
 		this.estimator = new LinearEstimator();
 		this.currentTemp = 0.0;
 		this.rate = 0.0;
+		this.thermometer = thermometer;
+		
 	}
 	
 	public String getSessionID() {
@@ -24,11 +29,13 @@ public class CookingSession implements TemperatureListener {
 	}
 	
 	public void startCooking() {
-		
+		thermometer.addListener(this);
 	}
 	
 	public void stopCooking() {
-		
+		thermometer.removeListener(this);
+		this.progress = 0.0;
+		this.currentTemp = 0.0;
 	}
 	
 	public double getProgress() {
@@ -39,9 +46,24 @@ public class CookingSession implements TemperatureListener {
 		return this.timeRemaining;
 	}
 	
-	public void onTemperatureUpdate(String reading) {
-		double temp = Double.parseDouble(reading); 
-		this.rate = this.estimator.calculateRate(temp, this.currentTemp);
+	public ThermometerDevice getThermometer() {
+		return thermometer;
+	}
+	
+	public boolean isDone() {
+		return done;
+	}
+	
+	
+	
+	public void onTemperatureUpdate(TemperatureReading reading) {
+		double temp = reading.getTemperature();
+		double newrate = this.estimator.calculateRate(temp, this.currentTemp);
+		
+		if (newrate != 0) {
+			this.rate = newrate;
+		}
+		
 		this.currentTemp = temp;
 		
 		this.progress = this.estimator.estimatePercent(
@@ -49,13 +71,15 @@ public class CookingSession implements TemperatureListener {
 				this.foodProfile.getTargetTemp()
 		);
 		
+		if (this.progress >= 1.0) {
+			this.progress = 1.0;
+			this.done = true;
+		}
+		
 		this.timeRemaining = this.estimator.estimateTimeRemaining(
 				this.currentTemp,
 				this.foodProfile.getTargetTemp(),
 				this.rate
 		);
 	}
-	
-	
-	
 }
