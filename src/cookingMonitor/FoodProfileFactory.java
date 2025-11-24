@@ -18,6 +18,22 @@ public class FoodProfileFactory {
 		return createChickenProfile();
 	}
 	
+	public static FoodProfile createSteakProfile(Doneness doneness) {
+		switch (doneness) {
+		case RARE:
+			return createRareSteakProfile();
+		case MEDIUM:
+			return createMediumSteakProfile();
+		case WELL:
+			return createWellSteakProfile();
+		default:
+			System.out.println("Doneness not selected.");
+			System.exit(1);
+			break;
+		}
+		return createWellSteakProfile();
+	}
+	
 	public static FoodProfile createWellSteakProfile() {
 		return new WellSteakProfile();
 	}

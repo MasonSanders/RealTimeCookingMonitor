@@ -14,6 +14,7 @@ public class SimulatedThermometer implements ThermometerDevice, Runnable {
 	
 	public SimulatedThermometer() {
 		this.deviceId = "thermo-" + nextId++;
+		currentTemp = 0.0;
 	}
 	
 	@Override
@@ -24,6 +25,7 @@ public class SimulatedThermometer implements ThermometerDevice, Runnable {
 	@Override
 	public void removeListener(TemperatureListener l) {
 		listeners.remove(l);
+		currentTemp = 0.0;
 	}
 	
 	private void notifyListeners() {
@@ -66,11 +68,6 @@ public class SimulatedThermometer implements ThermometerDevice, Runnable {
 	
 	@Override
 	public void disconnect() {
-		try {
-			simulationThread.join();
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
 		running = false;
 		connected = false;	
 	}

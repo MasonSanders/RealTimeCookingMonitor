@@ -21,11 +21,24 @@ public class SessionController {
 	}
 	
 	public void startSession(String deviceID) {
-		sessions.get(deviceID).startCooking();
+		CookingSession s = sessions.get(deviceID);
+		if (s == null) {
+			return;
+		}
+		ThermometerDevice t = s.getThermometer();
+		t.connect();
+		s.startCooking();
 	}
 	
 	public void stopSession(String deviceID) {
-		sessions.get(deviceID).stopCooking();
+		CookingSession s = sessions.get(deviceID);
+		if (s == null) {
+			return;
+		}
+		ThermometerDevice t = s.getThermometer();
+		s.stopCooking();
+		t.disconnect();
+		sessions.remove(deviceID);
 	}
 	
 	public CookingSession getSession(String deviceID) {

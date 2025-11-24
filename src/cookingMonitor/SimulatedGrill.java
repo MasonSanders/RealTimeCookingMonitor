@@ -99,11 +99,6 @@ public class SimulatedGrill implements GrillDevice, Runnable {
 	public void disconnect() {
 		running = false;
 		heating = false;
-		try {
-			simulationThread.join();
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
 		connected = false;
 	}
 	

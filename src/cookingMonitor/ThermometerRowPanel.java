@@ -6,11 +6,29 @@ import java.awt.*;
 public class ThermometerRowPanel extends JPanel {
 	public ThermometerRowPanel(ThermometerViewModel vm, MainScreenCallbacks controller) {
 		setLayout(new BorderLayout());
-		JLabel nameLabel = new JLabel(vm.label + " (" + vm.deviceID + ")");
+		JLabel nameLabel = new JLabel("(" + vm.deviceID + ") ");
 		add(nameLabel, BorderLayout.WEST);
 		
-		JLabel statusLabel = new JLabel(vm.status.toString());
-		add(statusLabel, BorderLayout.CENTER);
+		JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.X_AXIS));
+		
+		String centerText;
+        if (vm.status == ThermometerStatus.COOKING) {
+            int pct = (int) (Math.floor(vm.progress * 100));
+            centerText = vm.status + " (" + pct + "%)";
+        } else {
+            centerText = vm.status.toString();
+        }
+		
+		JLabel statusLabel = new JLabel(centerText);
+		centerPanel.add(statusLabel, BorderLayout.CENTER);
+		
+		if (vm.status == ThermometerStatus.COOKING && vm.timeRemaining != null && !vm.timeRemaining.isEmpty()) {
+            JLabel timeLabel = new JLabel("Time remaining: " + vm.timeRemaining);
+            centerPanel.add(timeLabel);
+        }
+		
+		add(centerPanel, BorderLayout.CENTER);
 		
 		JButton actionButton = new JButton();
 		switch (vm.status) {
@@ -28,7 +46,7 @@ public class ThermometerRowPanel extends JPanel {
 			break;
 		case DONE:
 			actionButton.setText("Done");
-			actionButton.setEnabled(false);
+			actionButton.addActionListener(e -> controller.handleActiveSessionClick(vm.deviceID));
 			break;
 		}
 		add(actionButton, BorderLayout.EAST);

@@ -10,6 +10,7 @@ public class CookingSession implements TemperatureListener {
 	public static int nextSID = 1;
 	private ProgressEstimator estimator;
 	private ThermometerDevice thermometer;
+	private boolean done = false;
 	
 	public CookingSession(FoodProfile fp, ThermometerDevice thermometer) {
 		this.sessionID = "session-" + nextSID++;
@@ -20,6 +21,7 @@ public class CookingSession implements TemperatureListener {
 		this.currentTemp = 0.0;
 		this.rate = 0.0;
 		this.thermometer = thermometer;
+		
 	}
 	
 	public String getSessionID() {
@@ -27,11 +29,13 @@ public class CookingSession implements TemperatureListener {
 	}
 	
 	public void startCooking() {
-		thermometer.connect();
+		thermometer.addListener(this);
 	}
 	
 	public void stopCooking() {
-		thermometer.disconnect();
+		thermometer.removeListener(this);
+		this.progress = 0.0;
+		this.currentTemp = 0.0;
 	}
 	
 	public double getProgress() {
@@ -46,15 +50,31 @@ public class CookingSession implements TemperatureListener {
 		return thermometer;
 	}
 	
+	public boolean isDone() {
+		return done;
+	}
+	
+	
+	
 	public void onTemperatureUpdate(TemperatureReading reading) {
 		double temp = reading.getTemperature();
-		this.rate = this.estimator.calculateRate(temp, this.currentTemp);
+		double newrate = this.estimator.calculateRate(temp, this.currentTemp);
+		
+		if (newrate != 0) {
+			this.rate = newrate;
+		}
+		
 		this.currentTemp = temp;
 		
 		this.progress = this.estimator.estimatePercent(
 				this.currentTemp, 
 				this.foodProfile.getTargetTemp()
 		);
+		
+		if (this.progress >= 1.0) {
+			this.progress = 1.0;
+			this.done = true;
+		}
 		
 		this.timeRemaining = this.estimator.estimateTimeRemaining(
 				this.currentTemp,

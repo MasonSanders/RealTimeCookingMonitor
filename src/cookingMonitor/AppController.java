@@ -3,6 +3,7 @@ package cookingMonitor;
 import java.util.List;
 
 import javax.swing.JOptionPane;
+import javax.swing.Timer;
 
 import java.util.ArrayList;
 
@@ -11,6 +12,7 @@ public class AppController implements GrillTemperatureObserver, MainScreenCallba
 	private final MainScreen mainScreen;
 	private final FoodSelectionScreen foodSelectionScreen;
 	private final PreheatScreen preheatScreen;
+	private final SteakDonenessScreen steakDonenessScreen;
 	
 	private GrillController grillController;
 	private GrillDevice grill;
@@ -20,6 +22,8 @@ public class AppController implements GrillTemperatureObserver, MainScreenCallba
 	private String pendingThermometerID;
 	private boolean grillPreheatedOnce = false;
 	private String pendingSessionID;
+	
+	private Timer uiTimer;
 	
 	public AppController() {
 		sessionController = new SessionController();
@@ -33,13 +37,18 @@ public class AppController implements GrillTemperatureObserver, MainScreenCallba
 		mainScreen = new MainScreen(this);
 		foodSelectionScreen = new FoodSelectionScreen(this);
 		preheatScreen = new PreheatScreen(this);
+		steakDonenessScreen = new SteakDonenessScreen(this);
 		
 		mainWindow.addScreen(MainWindow.SCREEN_MAIN, mainScreen);
 		mainWindow.addScreen(MainWindow.SCREEN_FOOD_SELECTION, foodSelectionScreen);
 		mainWindow.addScreen(MainWindow.SCREEN_PREHEAT, preheatScreen);
+		mainWindow.addScreen(MainWindow.SCREEN_DONENESS, steakDonenessScreen);
 		mainWindow.setVisible(true);
+		uiTimer = new Timer(1000, e -> refreshMainScreen());
+		
 		refreshMainScreen();
 		mainWindow.showScreen(MainWindow.SCREEN_MAIN);
+		uiTimer.start();
 	}
 	
 	public void refreshMainScreen() {
@@ -50,21 +59,30 @@ public class AppController implements GrillTemperatureObserver, MainScreenCallba
 	public List<ThermometerViewModel> buildThermometerViewModels() {
 		List<ThermometerViewModel> list = new ArrayList<>();
 		
-		boolean grillPreheating = grillController.isPreheating();
+		boolean grillPreheating = !grillPreheatedOnce && grillController.isPreheating();
 		for (ThermometerDevice device : thermometerManager.getAllThermometers()) {
 			ThermometerViewModel vm = new ThermometerViewModel();
 			vm.deviceID = device.getDeviceID();
+			vm.label = device.getDeviceID();
 			
 			if (sessionController.hasSession(device.getDeviceID())) {
 				CookingSession session = sessionController.getSession(device.getDeviceID());
-				vm.status = ThermometerStatus.COOKING;
 				vm.progress = session.getProgress();
+				
+				if (session.isDone()) {
+					vm.status = ThermometerStatus.DONE;
+				} else {
+					vm.status = ThermometerStatus.COOKING;
+				}
+				vm.timeRemaining = session.getTimeRemaining();
 			} else if (grillPreheating) {
 				vm.status = ThermometerStatus.PREHEATING;
 				vm.progress = 0.0;
+				vm.timeRemaining = "";
 			} else {
 				vm.status = ThermometerStatus.AVAILABLE;
 				vm.progress = 0.0;
+				vm.timeRemaining = "";
 			}
 			
 			list.add(vm);
@@ -90,25 +108,23 @@ public class AppController implements GrillTemperatureObserver, MainScreenCallba
 		}
 		
 		FoodProfile profile = FoodProfileFactory.create(dish);
-		sessionController.addSession(
-				new CookingSession(profile, thermometerManager.getThermometer(pendingThermometerID))
-			);
+		ThermometerDevice thermo = thermometerManager.getThermometer(pendingThermometerID);
+		CookingSession session = new CookingSession(profile, thermo);
 		
-		String sessionID = sessionController.getSession(
-				thermometerManager.getThermometer(
-						pendingThermometerID
-						).getDeviceID()).getSessionID();
+		sessionController.addSession(session);
+		
+		String deviceID = pendingThermometerID;
 		
 		if (!grillPreheatedOnce) {
 			grillController.setDesiredTemp(232.2);
 			
 			grillController.preheat();
 			
-			pendingSessionID = sessionID;
+			pendingSessionID = deviceID;
 			preheatScreen.setTargetTemperature(grillController.getDesiredTemp());
 			mainWindow.showScreen(MainWindow.SCREEN_PREHEAT);
 		} else {
-			startCooking(sessionID);
+			startCooking(deviceID);
 		}
 			
 	}
@@ -158,7 +174,35 @@ public class AppController implements GrillTemperatureObserver, MainScreenCallba
 			pendingSessionID = null;
 		}
 		
-		mainWindow.showScreen(MainWindow.SCREEN_MAIN);
-		refreshMainScreen();
+		//mainWindow.showScreen(MainWindow.SCREEN_MAIN);
+		//refreshMainScreen();
+	}
+	
+	@Override
+	public void handleSteakDonenessSelected(Doneness doneness) {
+		FoodProfile profile = FoodProfileFactory.createSteakProfile(doneness);
+		
+		ThermometerDevice thermo = thermometerManager.getThermometer(pendingThermometerID);
+		
+		CookingSession session = new CookingSession(profile, thermo);
+		
+		sessionController.addSession(session);
+		
+		String deviceID = pendingThermometerID;
+		
+		if (!grillPreheatedOnce) {
+			double target = 232.2;
+			grillController.setDesiredTemp(target);
+			grillController.preheat();
+			pendingSessionID = deviceID;
+			preheatScreen.setTargetTemperature(target);
+			mainWindow.showScreen(MainWindow.SCREEN_PREHEAT);
+		} else {
+			startCooking(deviceID);
+			mainWindow.showScreen(MainWindow.SCREEN_MAIN);
+			refreshMainScreen();
+		}
+		
+		
 	}
 }
